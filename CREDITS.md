@@ -20,10 +20,14 @@ These are dedicated to the public domain (CC0 1.0): use them in any project, no 
 
 * **Thai town cast** (`samples/portraits/town_*`): cropped from 48px side-view sheets composed with
   [Easy Sprite](https://github.com/Saladin2020/easysprite) (kid, vendor, monk, farmer, student, elder), from
-  the Easy Sprite demo cast. Same licence as Easy Sprite's parts.
-* **Backgrounds** (`samples/backgrounds/thai_village_*.png`): rendered from the
-  [Easy Scene](https://github.com/Saladin2020/easyscene) `thai_village_cast` demo scene.
-* Demo script `village_delivery.ezd` (Thai village delivery) — MIT, like the code.
+  the Easy Sprite demo cast. Same licence as Easy Sprite's parts. The Muslim neighbours (`town_hijab_teacher`,
+  `town_kopiah_boy`, `town_pak_cik`, `town_roti_seller`, `town_tadika_girl`) come from the same Easy Sprite parts
+  (hijab/tudung, kopiah, jubah, baju kurung).
+* **Backgrounds** (`samples/backgrounds/*.png`): rendered from the
+  [Easy Scene](https://github.com/Saladin2020/easyscene) `thai_village_cast` demo scene;
+  `kampung_mosque.png` is Easy Scene's `harmony_town` (Malay house + wooden mosque) at camera 560.
+* Demo scripts `village_delivery.ezd` (Thai village delivery) and `salam_neighbours.ezd` (multicultural
+  village) — MIT, like the code.
 
 ## Runtimes
 

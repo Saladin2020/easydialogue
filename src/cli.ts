@@ -59,7 +59,7 @@ program
   .action(async (o: { force?: boolean; workspace?: string }) => {
     const root = await initWorkspace(workspaceOf(o.workspace), { force: o.force });
     console.log(`Initialized Easy Dialogue workspace at ${root}`);
-    console.log("  dialogues/    .ezd scripts (village_delivery.ezd demo, hello.ezd)");
+    console.log("  dialogues/    .ezd scripts (village_delivery.ezd, salam_neighbours.ezd, hello.ezd)");
     console.log("  portraits/    <set>/<emotion>.png (Thai town cast from Easy Sprite)");
     console.log("  backgrounds/  preview backgrounds (Easy Scene thai_village_street)");
     console.log("  exports/      Godot / PixiJS / JSON / voice manifest exports");

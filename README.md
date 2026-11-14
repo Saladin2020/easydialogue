@@ -65,6 +65,29 @@ boundaries and never drops a vowel or tone mark. The third sibling of
   <img src="docs/assets/portraits-lineup.png" width="700" alt="Six Thai town characters × seven emotions" />
 </p>
 
+### Multicultural village demo · สลามเพื่อนบ้าน
+
+`salam_neighbours.ezd` takes place in a southern Thai town where Buddhist, Muslim and Chinese-Thai families
+live side by side. After a storm, ต้น (a Buddhist boy) and his friend อาดัม (a Muslim boy in a kopiah) help
+fix the roof of the Tadika school (ตาดีกา) next to the mosque, then carry chairs into the temple sala for the
+evening merit-making. Along the way ต้น learns to greet with **อัสสะลามุอะลัยกุม**, and the answer is
+**วะอะลัยกุมุสสะลาม**. He also learns what **อินชาอัลลอฮ์** means ("if Allah wills", said about plans for
+later) and how to say **ขอบคุณ** in Malay (ตรีมอกาเซะ). The story ends with roti and teh tarik at ก๊ะนะ's tea
+shop and an invitation to wrap ketupat (ตูปะ) for Hari Raya (รายอ). Both greetings, the salam and the wai,
+are offered as choices and both are welcomed. The cast adds five Muslim neighbours made from Easy Sprite:
+ก๊ะฟาตีมะห์ (hijab teacher), อาดัม (kopiah boy), ปะจิอิสมะแอ (jubah + kopiah, beard), ก๊ะนะ (roti seller)
+and ไอชะฮ์ (Tadika girl in a white school tudung). The background is Easy Scene's `harmony_town`, and the
+`@camera` targets (`market`, `tadika`, `temple`) are spawns in Easy Tilemap's `multicultural_village`.
+
+<p align="center">
+  <img src="docs/assets/dialogue-salam-choice.png" width="440" alt="Choice screen: greet Pak Cik with Assalamu'alaikum or a wai, over the kampung mosque street" />
+  <img src="docs/assets/dialogue-salam.png" width="440" alt="ปะจิอิสมะแอ answers วะอะลัยกุมุสสะลาม in the paper dialogue box" />
+</p>
+
+```bash
+easydialogue play salam_neighbours --picks 0,0,0,0 --vars
+```
+
 <p align="center">
   <img src="docs/assets/box-styles.png" width="900" alt="The four box styles: teak, red lantern, rice paper, night market" />
 </p>
@@ -73,7 +96,7 @@ boundaries and never drops a vowel or tone mark. The third sibling of
 
 ```bash
 npm install
-npx tsx src/cli.ts init --workspace ./my-dialogue      # demo scripts, cast portraits, backgrounds
+npx tsx src/cli.ts init --workspace ./my-dialogue      # demo scripts (village_delivery, salam_neighbours), cast portraits, backgrounds
 npx tsx src/cli.ts serve --workspace ./my-dialogue     # editor → http://127.0.0.1:8798/
 ```
 
@@ -199,7 +222,9 @@ Ports: API / editor 8798 · MCP HTTP 8799 · Vite 5175.
 
 Seven small, local-first tools that share one look (teak, lantern gold, Kanit, 16/48px pixels), one
 workflow (CLI · web editor · MCP server) and the same targets (**Godot 4.3+** and **PixiJS v8**).
-ชุดเครื่องมือทำเกมพิกเซลสไตล์ไทย ใช้ร่วมกันได้ทั้งชุด
+ชุดเครื่องมือทำเกมพิกเซลสไตล์ไทย ใช้ร่วมกันได้ทั้งชุด  
+The samples share one multicultural southern Thai village: Buddhist temple, wooden kampung mosque and
+Chinese-Thai shrine on the same street. หมู่บ้านพหุวัฒนธรรม วัด มัสยิด ศาลเจ้า อยู่ร่วมกันในเมืองเดียว
 
 | | Tool | What it does | Repo |
 |:-:|---|---|---|

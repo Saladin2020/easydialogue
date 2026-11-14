@@ -1,0 +1,35 @@
+{
+  "format": "easydialogue-portrait/1",
+  "id": "town_roti_seller",
+  "source": "town_roti_seller.png",
+  "size": 64,
+  "crop": {
+    "x": 8,
+    "y": 2,
+    "w": 32,
+    "h": 32,
+    "scale": 2
+  },
+  "emotions": [
+    "neutral",
+    "happy",
+    "sad",
+    "surprised",
+    "angry",
+    "thinking",
+    "shy"
+  ],
+  "faceSwap": [
+    "thinking",
+    "shy",
+    "happy",
+    "surprised",
+    "sad",
+    "angry"
+  ],
+  "eyes": {
+    "x": 12,
+    "y": 11,
+    "w": 8
+  }
+}

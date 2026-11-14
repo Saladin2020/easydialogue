@@ -35,6 +35,17 @@ await save("dialogue-choices.png", await renderDialogue({ line: ch.line, choices
 await save("dialogue-typing.png", await renderDialogue({ line: findMoment(doc, { line: 3 }).line, style: "lantern", scale: 3, portraitsDir, background: shops, reveal: 0.55 }));
 await save("dialogue-ending.png", await renderDialogue({ line: findMoment(doc, { picks: [0, 0], lineId: undefined, line: 17 }).line, style: "night", scale: 3, portraitsDir, background: shops }));
 
+// multicultural demo: salam greeting over the kampung mosque street (Easy Scene harmony_town)
+{
+  const kampung = path.join(samples, "backgrounds", "kampung_mosque.png");
+  const salam = compileScript(await readFile(path.join(samples, "dialogues", "salam_neighbours.ezd"), "utf8"), { id: "salam_neighbours" }).doc;
+  if (!salam) throw new Error("salam_neighbours has errors");
+  const c1 = findMoment(salam, { choice: 1 });
+  await save("dialogue-salam-choice.png", await renderDialogue({ line: c1.line, choices: c1.choices, selected: 0, style: "paper", scale: 3, portraitsDir, background: kampung }));
+  const reply = findMoment(salam, { picks: [0], line: 6 });
+  await save("dialogue-salam.png", await renderDialogue({ line: reply.line, style: "paper", scale: 3, portraitsDir, background: kampung }));
+}
+
 // 4) four box styles, 2×2 at 2x
 {
   const S = 2;
