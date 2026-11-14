@@ -28,10 +28,14 @@ export interface LineStmt {
   src: number;
 }
 
+export type DisabledChoice = "hide" | "grey";
+
 export interface ChoiceOption {
   id: string;
   text: string;
   cond?: Expr;
+  /** When the condition fails: hide (default) or show the choice greyed out. Overrides the document default. */
+  disabled?: DisabledChoice;
   body: Stmt[];
   src: number;
 }
@@ -107,6 +111,8 @@ export interface DialogueDoc {
   nodes: Record<string, DialogueNode>;
   /** Box style id used by previews/exports (overridable at export). */
   box?: string;
+  /** Failed-condition choices: hide them (default, backward compatible) or show them greyed out. */
+  disabledChoices?: DisabledChoice;
   meta: { lines: number; choices: number; generator: string };
 }
 

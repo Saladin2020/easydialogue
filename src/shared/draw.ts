@@ -184,12 +184,13 @@ export function drawDialogue(g: Ctx, A: DrawAssets, opts: DrawOptions): DrawResu
     ch.options.forEach((o, i) => {
       const ry = y + L2.padY + i * L2.rowH;
       out.choiceRects.push({ x, y: ry, w, h: L2.rowH });
-      if (i === sel) {
+      const dim = Boolean(o.disabled);
+      if (i === sel && !dim) {
         g.fillStyle = `${C.accent}29`;
         g.fillRect((x + 6) * S, (ry + 1) * S, (w - 12) * S, (L2.rowH - 2) * S);
         di(g, A.cursor, (x + 9) * S, (ry + 5) * S, 6 * S, 7 * S);
       }
-      textShadow(o.text, (x + L2.padX) * S, (ry + L2.fontSize + 2.5) * S, i === sel ? C.choiceHi : C.choice);
+      textShadow(o.text, (x + L2.padX) * S, (ry + L2.fontSize + 2.5) * S, dim ? C.choiceDim : i === sel ? C.choiceHi : C.choice);
     });
   }
 

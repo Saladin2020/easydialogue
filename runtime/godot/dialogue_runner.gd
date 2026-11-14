@@ -22,6 +22,7 @@ var pending = null
 var node_id: String = ""
 var ended := true
 var visited: Dictionary = {}
+var disabled_choices := "hide"
 
 var _interp := RegEx.create_from_string("(?<!\\\\)\\{\\s*\\$?([^}\\s]+)\\s*\\}")
 var _unescape := RegEx.create_from_string("\\\\([{}])")
@@ -45,6 +46,7 @@ func setup(d: Dictionary, initial: Dictionary = {}) -> void:
 	vars = (d.get("variables", {}) as Dictionary).duplicate(true)
 	for k in initial:
 		vars[k] = initial[k]
+	disabled_choices = str(d.get("disabledChoices", "hide"))
 
 
 func start(node: String = "") -> void:
@@ -92,8 +94,12 @@ func next() -> Dictionary:
 				var all: Array = s["options"]
 				for idx in all.size():
 					var o: Dictionary = all[idx]
-					if not o.has("cond") or _truthy(evaluate(o["cond"])):
-						options.append({"index": idx, "id": o["id"], "text": interpolate(str(o["text"]))})
+					var ok: bool = not o.has("cond") or _truthy(evaluate(o["cond"]))
+					var mode := str(o.get("disabled", disabled_choices))
+					if ok:
+						options.append({"index": idx, "id": o["id"], "text": interpolate(str(o["text"])), "disabled": false})
+					elif mode == "grey":
+						options.append({"index": idx, "id": o["id"], "text": interpolate(str(o["text"])), "disabled": true})
 				if options.is_empty():
 					continue
 				pending = {"type": "choices", "options": options, "src": s.get("src", 0), "_stmt": s}
@@ -125,11 +131,16 @@ func choose(index: int) -> void:
 		return
 	var stmt: Dictionary = pending["_stmt"]
 	var ok := false
+	var shown = null
 	for o in pending["options"]:
 		if int(o["index"]) == index:
+			shown = o
 			ok = true
 	if not ok:
 		push_error("Easy Dialogue: choice %d is not available" % index)
+		return
+	if shown != null and shown.get("disabled", false):
+		push_error("Easy Dialogue: choice %d is disabled" % index)
 		return
 	pending = null
 	var opt: Dictionary = stmt["options"][index]

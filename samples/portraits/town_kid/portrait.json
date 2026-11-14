@@ -21,7 +21,11 @@
   ],
   "faceSwap": [
     "thinking",
-    "happy"
+    "sad",
+    "surprised",
+    "shy",
+    "happy",
+    "angry"
   ],
   "eyes": {
     "x": 11,

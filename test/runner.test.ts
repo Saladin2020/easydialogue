@@ -40,6 +40,46 @@ describe("runner", () => {
     expect(r.next().type).toBe("end");
   });
 
+  it("can show failed-condition choices greyed out (global, per-choice, and a hide override)", () => {
+    const src = `@choices grey
+@var coins = 2
+=== a
+* [if coins > 5] rich -> END
+* [if coins > 5] [hide] secret -> END
+* [if coins > 5] [grey] also-rich -> END
+* poor -> END
+`;
+    const { doc, errors } = compileScript(src);
+    expect(errors).toEqual([]);
+    expect(doc!.disabledChoices).toBe("grey");
+    const secret = doc!.nodes.a!.body[0] as { t: string; options: Array<{ text: string; disabled?: string }> };
+    expect(secret.options.find((o) => o.text === "secret")?.disabled).toBe("hide");
+    expect(secret.options.find((o) => o.text === "also-rich")?.disabled).toBe("grey");
+
+    // A runner/global "hide" still honours a per-choice [grey] override.
+    const hidden = new DialogueRunner(doc!, { disabledChoices: "hide" }).start().next();
+    expect(hidden.type).toBe("choices");
+    if (hidden.type === "choices") {
+      expect(hidden.options.map((o) => ({ text: o.text, disabled: Boolean(o.disabled) }))).toEqual([
+        { text: "also-rich", disabled: true },
+        { text: "poor", disabled: false },
+      ]);
+    }
+
+    const r = new DialogueRunner(doc!).start();
+    const ev = r.next();
+    expect(ev.type).toBe("choices");
+    if (ev.type !== "choices") return;
+    expect(ev.options.map((o) => ({ text: o.text, disabled: Boolean(o.disabled) }))).toEqual([
+      { text: "rich", disabled: true },
+      { text: "also-rich", disabled: true },
+      { text: "poor", disabled: false },
+    ]);
+    expect(() => r.choose(ev.options[0]!.index)).toThrow(/disabled/);
+    r.choose(ev.options[2]!.index);
+    expect(r.next().type).toBe("end");
+  });
+
   it("finds moments for previews", async () => {
     const doc = await demo();
     expect(findMoment(doc, { line: 2 }).line!.name).toBe("ป้าแดง");

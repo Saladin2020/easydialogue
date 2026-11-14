@@ -97,7 +97,7 @@ kid: y
     expect(msgs).toMatch(/7:.*ghost/);
     expect(msgs).toMatch(/8:.*furious/);
     expect(msgs).toMatch(/10:.*other/);
-    expect(msgs).not.toMatch(/secret/); // assigning declares a variable implicitly
+    expect(msgs).toMatch(/9:.*secret/);
     expect(doc!.variables.secret).toBe(0);
     expect(msgs).toMatch(/island/);
   });

@@ -127,6 +127,7 @@ export class DialogueRunner {
     if (!doc || doc.format !== "easydialogue/1") throw new Error("Not an easydialogue/1 document");
     this.doc = doc;
     this.vars = { ...doc.variables, ...(opts.variables ?? {}) };
+    this.disabledChoices = opts.disabledChoices ?? doc.disabledChoices ?? "hide";
     this.onEvent = opts.onEvent ?? null;
     this.stack = [];
     this.pending = null;
@@ -176,7 +177,10 @@ export class DialogueRunner {
         case "choice": {
           const options = [];
           s.options.forEach((o, index) => {
-            if (!o.cond || truthy(evaluate(o.cond, this.vars))) options.push({ index, id: o.id, text: interpolate(o.text, this.vars) });
+            const ok = !o.cond || truthy(evaluate(o.cond, this.vars));
+            const mode = o.disabled ?? this.disabledChoices;
+            if (ok) options.push({ index, id: o.id, text: interpolate(o.text, this.vars), disabled: false });
+            else if (mode === "grey") options.push({ index, id: o.id, text: interpolate(o.text, this.vars), disabled: true });
           });
           if (!options.length) continue;
           this.pending = { type: "choices", options, src: s.src, _stmt: s };
@@ -219,7 +223,9 @@ export class DialogueRunner {
     const p = this.pending;
     if (!p) throw new Error("No choice is waiting");
     const opt = p._stmt.options[index];
-    if (!opt || !p.options.some((o) => o.index === index)) throw new Error(`Choice ${index} is not available`);
+    const shown = p.options.find((o) => o.index === index);
+    if (!opt || !shown) throw new Error(`Choice ${index} is not available`);
+    if (shown.disabled) throw new Error(`Choice ${index} is disabled`);
     this.pending = null;
     if (opt.body.length) this.stack.push({ body: opt.body, i: 0 });
     return opt;

@@ -34,7 +34,7 @@ boundaries and never drops a vowel or tone mark. The third sibling of
 
 | Script | Box | Portraits | Export |
 | --- | --- | --- | --- |
-| `.ezd` text: characters, nodes, choices with conditions, `if/elif/else`, variables, `{interpolation}`, events, line ids — errors with **line numbers** and "did you mean" | 9-slice pixel frames in 4 styles (teak · lantern · paper · night), name plate in the character colour, typewriter by grapheme cluster, choice list with cursor, next arrow | 32×32 crops from Easy Sprite sheets ×2, 7 emotions (face re-composed with Easy Sprite where possible, plus pixel overlays) | Godot 4.3+ project (runner + `DialogueBox.tscn`), PixiJS v8 runtime + demo page, compiled JSON, voice manifest (JSON + CSV) |
+| `.ezd` text: characters, nodes, choices with conditions, `if/elif/else`, variables, `{interpolation}`, events, line ids — errors with **line numbers** and "did you mean" | 9-slice pixel frames in 4 styles (teak · lantern · paper · night), name plate in the character colour, typewriter by grapheme cluster, choice list with cursor, next arrow | 32×32 crops from Easy Sprite sheets ×2, 7 emotions (generic faces re-composed with Easy Sprite where possible; lashes/elder/glasses and other non-generic faces get procedural eye/mouth variants so those features stay; plus pixel overlays) | Godot 4.3+ project (runner + `DialogueBox.tscn`), PixiJS v8 runtime + demo page, compiled JSON, voice manifest (JSON + CSV) |
 
 * **Thai first.** Kanit (OFL) is bundled and used everywhere: Skia/HarfBuzz for PNG previews, the browser,
   Pixi and Godot. Lines wrap with `Intl.Segmenter` (ICU word-smart autowrap in Godot) so Thai needs no spaces,
@@ -144,8 +144,11 @@ Drop `pixi.min.js` next to `index.html` to run offline; otherwise it loads PixiJ
 `easydialogue portraits --sheet sheet.png` reads the front idle frame of an Easy Sprite native sheet, centres a
 32×32 crop on the eyes and writes `neutral happy sad surprised angry thinking shy`. When the sheet's `.json`
 has its project selections and the Easy Sprite CLI is available (`EASYDIALOGUE_EASYSPRITE_CLI`), generic faces
-are re-composed (`face_smile` for happy, `face_blink` for thinking); every emotion also gets a small pixel
-overlay. Use any other 32px+ PNGs by dropping them in `portraits/<set>/<emotion>.png`.
+are re-composed (`face_smile` for happy, `face_blink` for thinking, `face_frown` / `face_surprise` / `face_wink`
+when those parts exist). Non-generic faces (lashes, elder, glasses, beard…) keep their features and get
+procedural per-emotion eye/mouth variants instead of a whole-face swap. Every emotion also gets a small pixel
+overlay. Failed-condition choices default to hidden; `@choices grey` (or a per-choice `[grey]` / `#grey`) shows
+them greyed out and unselectable. Use any other 32px+ PNGs by dropping them in `portraits/<set>/<emotion>.png`.
 
 ## MCP
 
