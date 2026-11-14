@@ -13,6 +13,35 @@ const demo = async () => {
   return res.doc!;
 };
 
+const salam = async () => {
+  const src = await readFile(path.join(import.meta.dirname, "../samples/dialogues/salam_neighbours.ezd"), "utf8");
+  const res = compileScript(src, { id: "salam_neighbours" });
+  expect(res.errors).toEqual([]);
+  expect(res.warnings).toEqual([]);
+  return res.doc!;
+};
+
+describe("salam_neighbours (multicultural demo)", () => {
+  it("salam route: greeting is answered, both the Tadika and the temple get help", async () => {
+    const r = autoplay(await salam(), [0, 0, 0, 0]);
+    expect(r.vars).toEqual({ greeted_salam: true, helped_tadika: true, helped_temple: true, roti: 2 });
+    const text = r.transcript.join("\n");
+    for (const phrase of ["อัสสะลามุอะลัยกุม", "วะอะลัยกุมุสสะลาม", "อินชาอัลลอฮ์", "ขอบคุณ"]) expect(text).toContain(phrase);
+    expect(r.events).toEqual(expect.arrayContaining(["camera market", "camera tadika", "camera temple"]));
+  });
+
+  it("temple-first route still visits the Tadika and reaches the shared ending", async () => {
+    const r = autoplay(await salam(), [1, 1, 1, 1]);
+    expect(r.vars.helped_tadika && r.vars.helped_temple).toBe(true);
+    expect(r.transcript.at(-1)).toMatch(/ทุกศาสนาช่วยกัน/);
+  });
+
+  it("can say no without penalty", async () => {
+    const r = autoplay(await salam(), [0, 2]);
+    expect(r.vars.helped_tadika).toBe(false);
+  });
+});
+
 describe("runner", () => {
   it("plays the village demo: help everyone → 15 baht ending", async () => {
     const r = autoplay(await demo(), [0, 0]);

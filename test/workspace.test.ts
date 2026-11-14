@@ -21,12 +21,15 @@ afterAll(() => cleanup());
 const pngSize = (b: Buffer) => ({ w: b.readUInt32BE(16), h: b.readUInt32BE(20) });
 
 describe("workspace", () => {
-  it("ships the demo scripts and the six-character cast", async () => {
+  it("ships the demo scripts, the Thai town cast and the Muslim neighbours", async () => {
     const scripts = await listScripts(root);
-    expect(scripts.map((s) => s.id).sort()).toEqual(["hello", "village_delivery"]);
+    expect(scripts.map((s) => s.id).sort()).toEqual(["hello", "salam_neighbours", "village_delivery"]);
     expect(scripts.every((s) => s.errors === 0)).toBe(true);
     const sets = await listPortraits(root);
-    expect(sets.map((s) => s.id).sort()).toEqual(["town_elder", "town_farmer", "town_kid", "town_monk", "town_student", "town_vendor"]);
+    expect(sets.map((s) => s.id).sort()).toEqual([
+      "town_elder", "town_farmer", "town_hijab_teacher", "town_kid", "town_kopiah_boy", "town_monk",
+      "town_pak_cik", "town_roti_seller", "town_student", "town_tadika_girl", "town_vendor",
+    ]);
     for (const s of sets) expect(s.emotions.sort()).toEqual([...EMOTIONS].sort());
   });
 
