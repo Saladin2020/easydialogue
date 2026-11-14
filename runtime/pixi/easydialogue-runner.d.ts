@@ -17,7 +17,7 @@ export interface LineEvent {
 }
 export interface ChoicesEvent {
   type: "choices";
-  options: { index: number; id: string; text: string }[];
+  options: { index: number; id: string; text: string; disabled?: boolean }[];
   src: number;
 }
 export type RunnerEvent = LineEvent | ChoicesEvent | { type: "end" };
@@ -30,7 +30,8 @@ export declare function evaluate(e: Expr, vars: Record<string, Value>): Value;
 export declare function interpolate(text: string, vars: Record<string, Value>): string;
 
 export declare class DialogueRunner {
-  constructor(doc: DialogueDoc, opts?: { variables?: Record<string, Value>; onEvent?: (name: string, args: string[], runner: DialogueRunner) => void });
+  constructor(doc: DialogueDoc, opts?: { variables?: Record<string, Value>; disabledChoices?: "hide" | "grey"; onEvent?: (name: string, args: string[], runner: DialogueRunner) => void });
+  disabledChoices: "hide" | "grey";
   doc: DialogueDoc;
   vars: Record<string, Value>;
   node: string | null;

@@ -4,13 +4,16 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { EMOTIONS } from "../shared/types.js";
+import { paintEmotion, faceStyleOf, isGenericFace, type EyeBox } from "./emotionFace.js";
 import { alphaAt, bbox, crop, readPng, setPx, upscale, writePng, type Img } from "./raster.js";
 
 /**
  * Portraits from Easy Sprite sheets: crop the head of the front-facing idle frame, upscale with
  * nearest-neighbour, and build emotion variants. When the Easy Sprite CLI is reachable and the
- * sheet has its sibling project JSON, "happy" and "thinking" re-compose the same character with the
- * smile / blink face parts; every emotion also gets a small CC0 pixel overlay (tear, "!", blush…).
+ * sheet has its sibling project JSON, generic faces re-compose with the matching Easy Sprite face
+ * part (smile, blink, frown, surprise, wink). Non-generic faces (lashes, elder, glasses, beard…)
+ * get procedural per-emotion eye/mouth variants so those features are kept. A small CC0 overlay
+ * (tear, "!", blush…) is still stamped as an accent.
  */
 
 export interface PortraitOptions {
@@ -72,8 +75,6 @@ function frontFrame(sheet: Img, meta: SheetMeta | null): Img {
   const col = Math.max(0, (meta?.frames ?? ["idle"]).indexOf("idle"));
   return crop(sheet, col * fs, row * fs, fs, fs);
 }
-
-const GENERIC_FACES = /(^|_)face_(neutral|smile|blink)$/;
 
 function run(cmd: string, args: string[]): Promise<{ code: number; out: string }> {
   return new Promise((resolve) => {
@@ -211,11 +212,19 @@ export async function makePortraits(opts: PortraitOptions): Promise<PortraitResu
   if (!fb) throw new Error(`Front idle frame of ${opts.sheet} is empty`);
 
   const cli = meta?.project?.selections ? findEasySpriteCli(opts.easysprite) : null;
-  if (meta?.project?.selections && !cli && opts.easysprite !== false) warnings.push("Easy Sprite CLI not found — emotions use overlays only (set EASYDIALOGUE_EASYSPRITE_CLI)");
+  if (meta?.project?.selections && !cli && opts.easysprite !== false) warnings.push("Easy Sprite CLI not found — emotions use procedural faces (set EASYDIALOGUE_EASYSPRITE_CLI)");
   const faceId = meta?.project?.selections?.face ?? "";
-  const generic = GENERIC_FACES.test(faceId);
-  const variants: Record<string, Img | null> = {};
-  let eyes: { x0: number; y0: number; x1: number; y1: number } | null = null;
+  const generic = isGenericFace(faceId);
+  const style = faceStyleOf(faceId);
+  const variants: Record<string, Img> = {};
+  let eyes: EyeBox | null = null;
+  const FACE_FOR: Record<string, string> = {
+    happy: "face_smile",
+    thinking: "face_blink",
+    sad: "face_frown",
+    surprised: "face_surprise",
+    shy: "face_wink",
+  };
   if (cli) {
     const tmpRoot = path.join(os.tmpdir(), "easydialogue-faces");
     await mkdir(tmpRoot, { recursive: true });
@@ -225,17 +234,30 @@ export async function makePortraits(opts: PortraitOptions): Promise<PortraitResu
     process.env.EASYSPRITE_ALLOWED_DIRS = [prevAllowed, tmp].filter(Boolean).join(path.delimiter);
     try {
       const blinkFace = /blink$/.test(faceId) ? "face_neutral" : "face_blink";
-      const [blink, smile] = await Promise.all([recomposeFace(cli, meta!, blinkFace, path.join(tmp, "b")), generic ? recomposeFace(cli, meta!, "face_smile", path.join(tmp, "s")) : null]);
+      const blink = await recomposeFace(cli, meta!, blinkFace, path.join(tmp, "b"));
       if (blink) {
         eyes = diffBox(base, blink, fb.y0 + 26);
-        if (generic) variants.thinking = /blink$/.test(faceId) ? base : blink;
-      } else warnings.push("Easy Sprite re-compose failed — emotions use overlays only");
-      if (smile) variants.happy = smile;
+        if (generic && !/blink$/.test(faceId)) variants.thinking = blink;
+        else if (generic && /blink$/.test(faceId)) variants.thinking = base;
+      } else warnings.push("Easy Sprite re-compose failed — emotions use procedural faces");
+      if (generic) {
+        await Promise.all(
+          Object.entries(FACE_FOR).map(async ([emotion, face]) => {
+            if (variants[emotion] || face === blinkFace) return;
+            const framed = await recomposeFace(cli, meta!, face, path.join(tmp, emotion));
+            if (framed) variants[emotion] = framed;
+          }),
+        );
+      }
     } finally {
       if (prevAllowed === undefined) delete process.env.EASYSPRITE_ALLOWED_DIRS;
       else process.env.EASYSPRITE_ALLOWED_DIRS = prevAllowed;
       await rm(tmp, { recursive: true, force: true });
     }
+  }
+  // Procedural variants for every missing emotion (and all emotions on non-generic faces).
+  for (const emotion of emotions.filter((e) => e !== "neutral")) {
+    if (!generic || !variants[emotion]) variants[emotion] = paintEmotion(base, emotion, eyes, style);
   }
 
   // crop window: centre on the eyes (or the head's top rows), keep hats in view

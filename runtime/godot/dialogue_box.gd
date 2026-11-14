@@ -166,6 +166,8 @@ func choose(i: int = -1) -> void:
 	if i >= opts.size():
 		return
 	var opt: Dictionary = opts[i]
+	if opt.get("disabled", false):
+		return
 	runner.choose(int(opt["index"]))
 	current_choices = null
 	choices.visible = false
@@ -290,31 +292,52 @@ func _show_choices(ev: Dictionary) -> void:
 	_rows.clear()
 	for i in opts.size():
 		var l := Label.new()
-		_style_label(l, _font_body, fs, C["choice"], true)
+		var dim: bool = bool(opts[i].get("disabled", false))
+		_style_label(l, _font_body, fs, C["choiceDim"] if dim else C["choice"], true)
 		l.text = str(opts[i]["text"])
 		l.position = Vector2(float(c2["padX"]), _top_for(_font_body, fs, float(c2["padY"]) + i * float(c2["rowH"]) + fs + 2.5))
 		l.mouse_filter = Control.MOUSE_FILTER_STOP
 		var idx := i
-		l.mouse_entered.connect(func(): _select(idx))
+		l.mouse_entered.connect(func(): if not _option_disabled(idx): _select(idx))
 		l.gui_input.connect(func(e): if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT: choose(idx))
 		rows_root.add_child(l)
 		_rows.append(l)
 	_select(0)
 
 
-func _select(i: int) -> void:
+func _option_disabled(i: int) -> bool:
+	if current_choices == null:
+		return true
+	var opts: Array = current_choices["options"]
+	if i < 0 or i >= opts.size():
+		return true
+	return bool(opts[i].get("disabled", false))
+
+
+func _select(i: int, dir: int = 1) -> void:
 	if current_choices == null:
 		return
 	var n: int = (current_choices["options"] as Array).size()
-	selected = ((i % n) + n) % n
+	if n == 0:
+		return
+	var idx := ((i % n) + n) % n
+	for _k in n:
+		if not _option_disabled(idx):
+			break
+		idx = ((idx + dir) % n + n) % n
+	selected = idx
+	var dim := _option_disabled(selected)
 	var c2: Dictionary = L["choices"]
 	var ry := float(c2["padY"]) + selected * float(c2["rowH"])
 	highlight.position = Vector2(6, ry + 1)
 	highlight.size = Vector2(_choice_w - 12, float(c2["rowH"]) - 2)
 	cursor.position = Vector2(9, ry + 5)
 	cursor.size = Vector2(6, 7)
+	highlight.visible = not dim
+	cursor.visible = not dim
 	for k in _rows.size():
-		_rows[k].add_theme_color_override("font_color", Color(C["choiceHi"] if k == selected else C["choice"]))
+		var col: String = C["choiceDim"] if _option_disabled(k) else (C["choiceHi"] if k == selected else C["choice"])
+		_rows[k].add_theme_color_override("font_color", Color(col))
 
 
 func _process(delta: float) -> void:
@@ -337,9 +360,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if state == "choices":
 		if event.is_action_pressed("ui_up"):
-			_select(selected - 1)
+			_select(selected - 1, -1)
 		elif event.is_action_pressed("ui_down"):
-			_select(selected + 1)
+			_select(selected + 1, 1)
 		elif event.is_action_pressed("ui_accept"):
 			choose()
 		elif event is InputEventKey and event.pressed and event.keycode >= KEY_1 and event.keycode <= KEY_9:

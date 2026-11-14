@@ -19,7 +19,14 @@
     "thinking",
     "shy"
   ],
-  "faceSwap": [],
+  "faceSwap": [
+    "happy",
+    "sad",
+    "surprised",
+    "angry",
+    "thinking",
+    "shy"
+  ],
   "eyes": {
     "x": 11,
     "y": 8,

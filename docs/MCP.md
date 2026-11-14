@@ -39,7 +39,7 @@ Cursor `~/.cursor/mcp.json`:
 | `list_dialogues` | scripts with node / line / choice / error / warning counts |
 | `get_dialogue` | source, line-numbered errors + warnings, characters, variables, nodes + jump edges, every spoken line with its id; pass `picks: [0,1]` for a play-through transcript and final variables |
 | `write_dialogue` | validate and save `dialogues/<id>.ezd`; refuses to save when there are errors unless `force`; `dryRun` only validates |
-| `make_portraits` | crop 32×32 portraits (×`scale`) + emotion variants from an Easy Sprite native sheet (`.png` with its `.json`) into `portraits/<id>/` |
+| `make_portraits` | crop 32×32 portraits (×`scale`) + emotion variants from an Easy Sprite native sheet (`.png` with its `.json`) into `portraits/<id>/`. Generic faces re-compose when the CLI is available; lashes/elder/glasses and other feature faces get procedural eye/mouth variants. |
 | `render_preview` | PNG of the N-th line (`line`), a line id (`lineId`) or the K-th choice screen (`choice`) after `picks`, in a box `style`, over a background — returned inline and saved in `exports/previews/` |
 | `export_dialogue` | `json` · `pixi` · `godot` · `voice` · `all` into `exports/<id>-<preset>/` |
 

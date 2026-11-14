@@ -124,7 +124,7 @@ export class DialogueBox {
   choose(i = this.selected) {
     if (this.state !== "choices") return;
     const opt = this.choices.options[i];
-    if (!opt) return;
+    if (!opt || opt.disabled) return;
     this.runner.choose(opt.index);
     this.choices = null;
     this.choicePanel.removeChildren();
@@ -221,7 +221,7 @@ export class DialogueBox {
       this.baselineTo(t, C2.padX, C2.padY + i * C2.rowH + C2.fontSize + 2.5);
       t.eventMode = "static";
       t.cursor = "pointer";
-      t.on("pointerover", () => this.select(i));
+      t.on("pointerover", () => { if (!ev.options[i].disabled) this.select(i); });
       t.on("pointertap", () => this.choose(i));
       this.choicePanel.addChild(t);
       return t;
@@ -230,15 +230,28 @@ export class DialogueBox {
     this.select(0);
   }
 
-  select(i) {
+  select(i, dir = 1) {
     if (!this.choices) return;
     const n = this.choices.options.length;
-    this.selected = ((i % n) + n) % n;
+    if (!n) return;
+    let idx = ((i % n) + n) % n;
+    for (let k = 0; k < n; k++) {
+      if (!this.choices.options[idx].disabled) break;
+      idx = ((idx + dir) % n + n) % n;
+    }
+    this.selected = idx;
+    const dim = Boolean(this.choices.options[idx]?.disabled);
     const C2 = this.L.choices;
     const ry = C2.padY + this.selected * C2.rowH;
-    this.hi.clear().rect(6, ry + 1, this.choiceW - 12, C2.rowH - 2).fill({ color: this.C.accent, alpha: 0.16 });
+    this.hi.clear();
+    this.cursor.visible = !dim;
+    this.hi.visible = !dim;
+    if (!dim) this.hi.rect(6, ry + 1, this.choiceW - 12, C2.rowH - 2).fill({ color: this.C.accent, alpha: 0.16 });
     this.cursor.position.set(9, ry + 5);
-    this.rows.forEach((t, k) => (t.style.fill = k === this.selected ? this.C.choiceHi : this.C.choice));
+    this.rows.forEach((t, k) => {
+      const d = Boolean(this.choices.options[k].disabled);
+      t.style.fill = d ? this.C.choiceDim : k === this.selected ? this.C.choiceHi : this.C.choice;
+    });
   }
 
   update(dt) {
@@ -260,8 +273,8 @@ export class DialogueBox {
   bindKeys(target = window, canvas) {
     target.addEventListener("keydown", (e) => {
       if (this.state === "choices") {
-        if (e.key === "ArrowUp" || e.key === "w") this.select(this.selected - 1);
-        else if (e.key === "ArrowDown" || e.key === "s") this.select(this.selected + 1);
+        if (e.key === "ArrowUp" || e.key === "w") this.select(this.selected - 1, -1);
+        else if (e.key === "ArrowDown" || e.key === "s") this.select(this.selected + 1, 1);
         else if (e.key === "Enter" || e.key === " " || e.key === "z") this.choose();
         else if (/^[1-9]$/.test(e.key)) this.choose(Number(e.key) - 1);
         else return;

@@ -43,6 +43,7 @@ else:
 | `@lang th` | Language tag for word wrapping (`Intl.Segmenter`). Default `th`. |
 | `@box style` | Default box style: `teak`, `lantern`, `paper`, `night`. |
 | `@var name = value` | Variable with an initial number, `true`/`false` or `"text"`. |
+| `@choices hide` / `@choices grey` | How failed-condition choices appear. `hide` is the default (backward compatible). `grey` shows them greyed out and unselectable. |
 | `@char id "Name" key=value…` | Character. Keys: `portrait=<set>` (folder in `portraits/`), `color=#hex` (name plate), `side=left\|right` (portrait side, default left), `voice=<id>` (copied to the voice manifest). |
 
 ## Nodes
@@ -59,6 +60,7 @@ bottom; when it reaches its end without a jump, the dialogue **ends** (nodes nev
 | `> text` or plain `text` | Narration (no name plate, no portrait). |
 | `text #line:my_id #tag` | Stable line id (voice files, localisation) and free tags. Auto ids are `<node>_<n>`, choices `<node>_c<n>`. |
 | `* text -> node` | Choice. Consecutive `*` lines at the same indent form one choice screen. |
+| `* [if cond] [grey] text` | Show this choice greyed out when `cond` fails (overrides `@choices`). `#grey` / `#hide` tags also work. |
 | `* [if cond] text` | Choice shown only when `cond` is true (hidden otherwise; a screen with no visible option is skipped). |
 | indented lines under `*` | Choice body. Without a jump, play continues after the whole choice group. |
 | `if cond:` / `elif cond:` / `else:` | Branches with indented bodies. |
@@ -89,8 +91,9 @@ Errors stop compilation (`doc: null`); warnings do not.
 * **Errors:** unknown jump target (with a "did you mean"), duplicate node or line id, missing `@start` node,
   bad header / expression / `~` syntax, unexpected indentation, empty line or choice text, headers inside
   nodes, `elif`/`else` without `if`.
-* **Warnings:** unknown speaker, non-standard emotion, variable read but never declared or set, node never
-  reached from `@start`, empty node, duplicate `@var`.
+* **Warnings:** unknown speaker, non-standard emotion, variable read but never declared or set, variable
+  assigned with `~` but never declared (it is still created as `0`), node never reached from `@start`, empty
+  node, duplicate `@var`.
 
 ## Compiled JSON: `easydialogue/1`
 

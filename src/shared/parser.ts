@@ -5,6 +5,7 @@ import {
   normalizeEmotion,
   type CharacterDef,
   type ChoiceOption,
+  type DisabledChoice,
   type CompileResult,
   type Diagnostic,
   type DialogueDoc,
@@ -35,6 +36,21 @@ const TAG_RE = /(?:^|\s)#([^\s#]+)/gu;
 export interface ParseOptions {
   /** Doc id when the script has no `@id` (usually the file name). */
   id?: string;
+}
+
+
+function flagFromName(raw: string): DisabledChoice | undefined {
+  const n = raw.toLowerCase();
+  if (n === "hide" || n === "hidden") return "hide";
+  if (["grey", "gray", "show", "show-disabled", "disabled"].includes(n)) return "grey";
+  return undefined;
+}
+
+function disabledFromTags(tags: string[]): DisabledChoice | undefined {
+  const names = new Set(tags.map((g) => g.toLowerCase()));
+  if (names.has("hide") || names.has("hidden")) return "hide";
+  if (names.has("grey") || names.has("gray") || names.has("show") || names.has("show-disabled") || names.has("disabled")) return "grey";
+  return undefined;
 }
 
 function stripComment(raw: string): string {
@@ -168,6 +184,13 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
       case "box":
         doc.box = value.trim();
         break;
+      case "choices": {
+        const v = value.trim().toLowerCase();
+        if (["hide", "hidden", "default"].includes(v) || v === "") doc.disabledChoices = "hide";
+        else if (["grey", "gray", "show", "show-disabled", "disabled"].includes(v)) doc.disabledChoices = "grey";
+        else warn(no, `@choices must be hide or grey (got "${value.trim()}")`);
+        break;
+      }
       case "var": {
         const vm = /^\$?([\p{L}_][\p{L}\p{M}\p{N}_]*)\s*=\s*(.+)$/u.exec(value.trim());
         if (!vm) return err(no, `Expected "@var name = value" (number, true/false or "text")`);
@@ -200,7 +223,7 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
         break;
       }
       default:
-        err(no, `Unknown header @${key}. Use @title, @id, @start, @lang, @box, @var or @char`);
+        err(no, `Unknown header @${key}. Use @title, @id, @start, @lang, @box, @choices, @var or @char`);
     }
   }
 
@@ -214,6 +237,7 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
   const jumps: { target: string; line: number }[] = [];
   const usedVars: { name: string; line: number }[] = [];
   const setVars = new Set<string>();
+  const setLine = new Map<string, number>();
   const lineIds = new Map<string, number>();
 
   function exprAt(src: string, no: number, colBase: number): Expr | undefined {
@@ -277,10 +301,16 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
           p++;
           let body = cl.text.slice(1).trim();
           let cond: Expr | undefined;
-          const cm = /^\[\s*if\s+(.+?)\s*\]\s*(.*)$/u.exec(body);
-          if (cm) {
-            cond = exprAt(cm[1]!, cl.no, cl.indent + 1);
-            body = cm[2]!;
+          let flag: DisabledChoice | undefined;
+          const take = (re: RegExp, apply: (m: RegExpExecArray) => void) => {
+            const m = re.exec(body);
+            if (m) { apply(m); body = m[2]!; return true; }
+            return false;
+          };
+          for (let n = 0; n < 3; n++) {
+            if (take(/^\[\s*if\s+(.+?)\s*\]\s*(.*)$/u, (cm) => { cond = exprAt(cm[1]!, cl.no, cl.indent + 1); })) continue;
+            if (take(/^\[\s*(hide|hidden|grey|gray|show|show-disabled|disabled)\s*\]\s*(.*)$/u, (fm) => { flag = flagFromName(fm[1]!); })) continue;
+            break;
           }
           let target: string | undefined;
           const jm = /^(.*?)\s*->\s*([\p{L}\p{N}_-]+)\s*$/u.exec(body);
@@ -299,7 +329,8 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
             inner.push(target === "END" ? { t: "end", src: cl.no } : { t: "jump", target, src: cl.no });
           }
           checkInterpolation(text, cl.no);
-          options.push({ id, text: unescape(text), ...(cond ? { cond } : {}), body: inner, src: cl.no });
+          const disabled = flag ?? disabledFromTags(tags);
+          options.push({ id, text: unescape(text), ...(cond ? { cond } : {}), ...(disabled ? { disabled } : {}), body: inner, src: cl.no });
         }
         doc.meta.choices++;
         return { t: "choice", options, src: no };
@@ -362,6 +393,7 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
         }
         const value = exprAt(sm[3]!, no, indent + t.indexOf(sm[3]!) + 1);
         setVars.add(sm[1]!);
+        if (!setLine.has(sm[1]!)) setLine.set(sm[1]!, no);
         if (sm[2] !== "=") usedVars.push({ name: sm[1]!, line: no });
         if (!value) return null;
         return { t: "set", var: sm[1]!, op: sm[2] as "=", value, src: no };
@@ -456,6 +488,7 @@ export function compileScript(source: string, opts: ParseOptions = {}): CompileR
     }
   }
   for (const v of setVars) if (!(v in doc.variables)) {
+    warn(setLine.get(v) ?? 1, `Variable "${v}" is assigned with ~ but never declared (@var ${v} = 0); it starts as 0`);
     doc.variables[v] = 0;
   }
 
