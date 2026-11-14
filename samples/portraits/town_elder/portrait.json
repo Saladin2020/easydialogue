@@ -1,0 +1,28 @@
+{
+  "format": "easydialogue-portrait/1",
+  "id": "town_elder",
+  "source": "town_elder.png",
+  "size": 64,
+  "crop": {
+    "x": 8,
+    "y": 7,
+    "w": 32,
+    "h": 32,
+    "scale": 2
+  },
+  "emotions": [
+    "neutral",
+    "happy",
+    "sad",
+    "surprised",
+    "angry",
+    "thinking",
+    "shy"
+  ],
+  "faceSwap": [],
+  "eyes": {
+    "x": 11,
+    "y": 8,
+    "w": 10
+  }
+}

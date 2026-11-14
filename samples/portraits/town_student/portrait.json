@@ -1,0 +1,28 @@
+{
+  "format": "easydialogue-portrait/1",
+  "id": "town_student",
+  "source": "town_student.png",
+  "size": 64,
+  "crop": {
+    "x": 8,
+    "y": 3,
+    "w": 32,
+    "h": 32,
+    "scale": 2
+  },
+  "emotions": [
+    "neutral",
+    "happy",
+    "sad",
+    "surprised",
+    "angry",
+    "thinking",
+    "shy"
+  ],
+  "faceSwap": [],
+  "eyes": {
+    "x": 12,
+    "y": 11,
+    "w": 8
+  }
+}

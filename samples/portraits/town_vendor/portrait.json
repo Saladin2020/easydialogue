@@ -1,0 +1,28 @@
+{
+  "format": "easydialogue-portrait/1",
+  "id": "town_vendor",
+  "source": "town_vendor.png",
+  "size": 64,
+  "crop": {
+    "x": 8,
+    "y": -1,
+    "w": 32,
+    "h": 32,
+    "scale": 2
+  },
+  "emotions": [
+    "neutral",
+    "happy",
+    "sad",
+    "surprised",
+    "angry",
+    "thinking",
+    "shy"
+  ],
+  "faceSwap": [],
+  "eyes": {
+    "x": 11,
+    "y": 14,
+    "w": 10
+  }
+}

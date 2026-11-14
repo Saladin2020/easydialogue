@@ -1,0 +1,15 @@
+// Smallest Easy Dialogue script: one node, a choice and a variable.
+@title สวัสดี
+@var friendly = 0
+@char guide "ไกด์" portrait=town_student color=#8fc7e8
+
+=== start
+guide [happy]: สวัสดีครับ ยินดีต้อนรับสู่ Easy Dialogue!
+* สวัสดีครับ
+    ~ friendly += 1
+    guide: ยินดีที่ได้รู้จักนะ
+* ...
+    guide [thinking]: เงียบจัง ไม่เป็นไรนะ
+if friendly > 0:
+    guide [happy]: ไว้คุยกันใหม่นะครับ
+-> END
